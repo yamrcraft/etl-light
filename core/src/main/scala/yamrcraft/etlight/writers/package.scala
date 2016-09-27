@@ -4,8 +4,8 @@ import org.apache.avro.generic.GenericRecord
 
 package object writers {
 
-	type AvroEventsWriter = EventsWriter[GenericRecord]
+  type AvroEventsWriter = EventsWriter[GenericRecord]
 
-	type ErrorEventsWriter = EventsWriter[ErrorEvent]
+  type ErrorEventsWriter = EventsWriter[ErrorEvent]
 
 }
