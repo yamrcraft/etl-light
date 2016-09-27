@@ -1,10 +1,12 @@
-import sbt._
 import sbt.Keys._
+import sbt._
 
 object Dependencies {
 
   def compileDependencies(deps: ModuleID*): Seq[Setting[_]] = Def.settings(libraryDependencies ++= deps map (_ % "compile"))
+
   def testDependencies(deps: ModuleID*): Seq[Setting[_]] = Def.settings(libraryDependencies ++= deps map (_ % "test"))
+
   def providedDependencies(deps: ModuleID*): Seq[Setting[_]] = Def.settings(libraryDependencies ++= deps map (_ % "provided"))
 
   val typesafeConfig = "com.typesafe" % "config" % "1.3.0"
@@ -15,8 +17,8 @@ object Dependencies {
 
   object curator {
     val version = "2.4.0"
-    val framework = "org.apache.curator" % "curator-framework"  % version
-    val test      = "org.apache.curator" % "curator-test"       % version
+    val framework = "org.apache.curator" % "curator-framework" % version
+    val test = "org.apache.curator" % "curator-test" % version
   }
 
   object spark {
