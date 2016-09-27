@@ -1,0 +1,34 @@
+version: '2'
+
+services:
+
+#  hadoop:
+#    image: sequenceiq/hadoop-docker:
+
+  kafka:
+    image: wurstmeister/kafka:0.10.0.1
+    mem_limit: 512m
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_NUM_PARTITIONS: 2
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    ports:
+      - 9092:9092
+      - 9001:9001 # Web UI port (available only if Trifecta is running)
+
+  zookeeper:
+    image: zookeeper:3.4.9
+    restart: always
+    mem_limit: 512m
+    ports:
+      - 2181:2181
+
+#  trifecta:
+#    image: docker.sysa.io/it-test/trifecta:0.21
+#    network_mode: "service:kafka"
+#    environment:
+#      - HTTP_PORT=9001
