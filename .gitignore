@@ -1,0 +1,8 @@
+#intellij 
+.idea/
+*.iml
+
+#mac finder files
+.DS_Store*
+
+target/
