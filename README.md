@@ -21,6 +21,8 @@ Features the following:
 
 * **Exactly once delivery:** this relates to the process of moving events between Kafka to target storage, since each job run starts from the last successful saved state and critical failures exits the job without committing a new state - any job running after that will try to re-consume all events since last successful run until success. duplicates are avoided by creating a unique file names containing the job id, any re-run of a job will use the same job-id and will override existing files.
 
+* **Error handling:** each consumed Kafka event that failed the processing phase (e.g. because of parsing error) will be written into a corresponding output error file including the processing error message so it can be later inspected and resolved.
+
 * **A single job run at a time:** uses a distributed lock (through zookeeper) to promise a single Spark job runs concurrently avoiding write contention and potential inconsistency/corruption.
  
 ## Configuration
