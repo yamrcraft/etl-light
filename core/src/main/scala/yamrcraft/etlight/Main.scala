@@ -1,10 +1,13 @@
 package yamrcraft.etlight
 
+import java.io.{File, FileInputStream}
+import java.net.URI
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.slf4j.LoggerFactory
 import yamrcraft.etlight.processors.EtlProcessor
-import yamrcraft.etlight.utils.{FakeLock, Lock}
+import yamrcraft.etlight.utils.{FakeLock, DLock}
 
 import scala.io.Source
 
@@ -18,20 +21,17 @@ object Main {
       println(
         s"""
            |Usage: Main <config>
-           |  <config> is a path to application configuration file
+           |  <config> path to the application configuration file, use 'file://' prefix in case file located on local storage.
          """.stripMargin)
       System.exit(1)
     }
 
-    val fs = FileSystem.get(new Configuration())
-
     val configPath = args(0)
-    val content = Source.fromInputStream(fs.open(new Path(configPath))).mkString
-    val settings = new Settings(content)
+    val settings = new Settings(readConfigContent(configPath))
 
     val lock = {
-      if (settings.etl.lockEnabled)
-        new Lock(settings.etl.lockZookeeperConnect, settings.etl.lockPath, settings.etl.waitForLockSeconds)
+      if (settings.etl.lock.enabled)
+        new DLock(settings.etl.lock.zookeeperConnect, settings.etl.lock.path, settings.etl.lock.waitForLockSeconds)
       else
         new FakeLock
     }
@@ -41,6 +41,26 @@ object Main {
       lock.release()
     } else {
       logger.error("can't acquire zookeeper lock!")
+    }
+  }
+
+  /**
+    * read configuration content (application.conf) either from:
+    * - local disk if path is 'file:///local-path'
+    * - or from hadoop storage otherwise
+    *
+    * @param configPath configuration file path
+    * @return content of configuration file
+    */
+  private def readConfigContent(configPath: String) = {
+    val configURI = new URI(configPath)
+    logger.info(s"Configuration file = '$configPath', scheme='${configURI.getScheme}'")
+
+    val fs = FileSystem.get(new Configuration())
+
+    configURI.getScheme match {
+      case "file" => Source.fromInputStream(new FileInputStream(new File(configURI))).mkString
+      case _ => Source.fromInputStream(fs.open(new Path(configPath))).mkString
     }
   }
 

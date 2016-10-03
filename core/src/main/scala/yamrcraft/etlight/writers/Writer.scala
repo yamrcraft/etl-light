@@ -1,6 +1,6 @@
 package yamrcraft.etlight.writers
 
-trait EventsWriter[T] {
+trait Writer[T] {
 
   def write(event: T): Unit
 

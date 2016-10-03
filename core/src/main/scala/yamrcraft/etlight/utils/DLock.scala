@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 /**
   * Inter process distributed lock using zookeeper.
   */
-class Lock(zkConnect: String, lockFile: String, waitForLockSeconds: Int) {
+class DLock(zkConnect: String, lockFile: String, waitForLockSeconds: Int) {
 
   val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -35,7 +35,7 @@ class Lock(zkConnect: String, lockFile: String, waitForLockSeconds: Int) {
 
 }
 
-class FakeLock extends Lock("", "", 0) {
+class FakeLock extends DLock("", "", 0) {
   override def tryLock() = true
 
   override def release() = {}

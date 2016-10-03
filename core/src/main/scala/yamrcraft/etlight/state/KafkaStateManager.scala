@@ -6,14 +6,14 @@ import org.apache.hadoop.fs.FileSystem
 import org.apache.spark.streaming.kafka.{KafkaCluster, OffsetRange}
 import org.json4s.jackson.Serialization
 import org.json4s.{DefaultFormats, Formats, ShortTypeHints}
-import yamrcraft.etlight.{EtlSettings, Settings}
+import yamrcraft.etlight.{Settings, StateSettings}
 
 case class KafkaOffsetsState(
   jobId: Long,
   ranges: List[OffsetRange]
 ) extends State
 
-class KafkaStateManager(settings: EtlSettings) extends StateManager[KafkaOffsetsState] {
+class KafkaStateManager(settings: StateSettings) extends StateManager[KafkaOffsetsState] {
 
   val fs = FileSystem.get(new Configuration())
 

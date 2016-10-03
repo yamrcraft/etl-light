@@ -5,7 +5,7 @@ A light and rather effective ETL job based on Spark. Targeted for Kafka to desti
 A single job run goes through the following steps:
 
 * Reads the last state file (Json format) containing consumed Kafka topics/partitions offsets of the last successful job run.
-* On first run (no available state yet) a configuration property is used to determine the starting offset (smallest / largest) to be consumed.
+* On the first run (no available state yet) or whenever a new topic or partition is added, a configuration property is used to determine the starting offset (smallest / largest) to be consumed.
 * Processing is done per topic/partition (max of one Spark executor per Kafka partition).
 * Each partition processing transform available events read from Kafka into an Avro GenericRecord and saves them into a Parquet format file partitioned by type (using configuration to map event types into base folder names) and time (using a timestamp field of the read events to map into folder time partition).
 * Only after successful processing of all partitions - a new state file is saved in target storage (e.g. HDFS/S3) to be used as a starting point by the next job run.
@@ -23,11 +23,13 @@ Features the following:
 
 * **Error handling:** each consumed Kafka event that failed the processing phase (e.g. because of parsing error) will be written into a corresponding output error file including the processing error message so it can be later inspected and resolved.
 
+* **Replay offsets:** As each job run starts from the last saved state file, it is possible to run jobs starting from an older state just by deleting all proceeding state files, this will cause the next job run to consume all events starting from that state offsets.
+
 * **A single job run at a time:** uses a distributed lock (through zookeeper) to promise a single Spark job runs concurrently avoiding write contention and potential inconsistency/corruption.
  
 ## Configuration
 
-See configuration example under: resource/application.conf
+See configuration example under: core/src/main/resources/application.conf
 
 **spark.conf:** properties used to directly configure Spark settings, passed to SparkConf upon construction.
 
@@ -35,15 +37,17 @@ See configuration example under: resource/application.conf
 
 **kafka.conf:** properties used to directly configure Kafka settings, passed to KafkaUtils.createRDD(...). 
 
-**etl.lock:** sets a distributed lock to prevent concurrent run jobs to avoid possible contention/corruption. 
+**etl.lock:** can be used to set a distributed lock in order to prevent the same job from running concurrently avoiding possible contention/corruption of data. 
 
 **etl.state:** sets the destination folder that holds the state files and the number of last state files to keep.
 
 **etl.errors-folder:** location of error folder to hold failed processed events (e.g. parse errors).
 
-**etl.transformer:** transformer class and configurations used to transform a single Kafka consumed event into target Avro/Parquet event.
+**etl.pipeline:** defines a pair of transformer and writer used together to create a processing pipeline for processing a single Kafka topic partition. 
 
-**etl.writer:** writer class and configurations. 
+**etl.pipeline.transformer.config:** transformer configurations.
+
+**etl.pipeline.writer.config:** writer configurations. 
 
 
 ## Running a single job using spark-submit

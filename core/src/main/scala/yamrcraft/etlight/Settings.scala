@@ -1,8 +1,8 @@
 package yamrcraft.etlight
 
 import com.typesafe.config.{Config, ConfigFactory}
+import yamrcraft.etlight.pipeline.PipelineFactory
 import yamrcraft.etlight.utils.ConfigConversions._
-import yamrcraft.etlight.writers.AvroEventsWriter
 
 import scala.collection.JavaConversions._
 
@@ -22,7 +22,7 @@ object KafkaSettings {
   def apply(config: Config) = {
     new KafkaSettings(
       topics = config.getStringList("topics").toSet,
-      properties = config.getConfig("conf").asMap
+      properties = config.getConfig("config").asMap
     )
   }
 }
@@ -36,53 +36,58 @@ object SparkSettings {
   def apply(config: Config) = {
     new SparkSettings(
       appName = config.getString("app-name"),
-      conf = config.getConfig("conf").asMap
+      conf = config.getConfig("config").asMap
     )
   }
 }
 
 case class EtlSettings(
-  lockEnabled: Boolean,
-  lockZookeeperConnect: String,
-  lockPath: String,
-  waitForLockSeconds: Int,
-  stateFilesToKeep: Int,
-  stateFolder: String,
+  lock: LockSettings,
+  state: StateSettings,
   errorsFolder: String,
-  transformerClass: String,
-  transformerConfig: Config,
-  writerClass: String,
-  writerConfig: Config
-) {
-
-  def createTransformer: Transformer =
-    Class.forName(transformerClass)
-      .getConstructor(classOf[Config])
-      .newInstance(transformerConfig)
-      .asInstanceOf[Transformer]
-
-  def createWriter(jobId: Long, partitionId: Int): AvroEventsWriter =
-    Class.forName(writerClass)
-      .getConstructor(classOf[Config], classOf[Long], classOf[Int])
-      .newInstance(writerConfig)
-      .asInstanceOf[AvroEventsWriter]
-}
+  pipeline: PipelineSettings
+)
 
 object EtlSettings {
   def apply(config: Config) = {
     new EtlSettings(
-      lockEnabled = config.getBoolean("lock.enabled"),
-      lockZookeeperConnect = config.getString("lock.zookeeper-connect"),
-      lockPath = config.getString("lock.path"),
-      waitForLockSeconds = config.getInt("lock.wait-for-lock-seconds"),
-      stateFolder = config.getString("state.folder"),
-      stateFilesToKeep = config.getInt("state.files-to-keep"),
+      lock = LockSettings(
+        config.getBoolean("lock.enabled"),
+        config.getString("lock.zookeeper-connect"),
+        config.getString("lock.path"),
+        config.getInt("lock.wait-for-lock-seconds")
+      ),
+      state = StateSettings(
+        config.getString("state.folder"),
+        config.getInt("state.files-to-keep")
+      ),
       errorsFolder = config.getString("errors-folder"),
-      transformerClass = config.getString("transformer.class"),
-      transformerConfig = config.getConfig("transformer.config"),
-      writerClass = config.getString("writer.class"),
-      writerConfig = config.getConfig("writer.config")
+      pipeline = PipelineSettings(
+        config.getString("pipeline.factory-class"),
+        config.getConfig("pipeline.transformer.config"),
+        config.getConfig("pipeline.writer.config")
+      )
     )
   }
 }
 
+case class LockSettings(
+  enabled: Boolean,
+  zookeeperConnect: String,
+  path: String,
+  waitForLockSeconds: Int
+)
+
+case class StateSettings(
+  stateFolder: String,
+  stateFilesToKeep: Int
+)
+
+case class PipelineSettings(
+  factoryClass: String,
+  transformerConfig: Config,
+  writerConfig: Config
+) {
+  def createFactory: PipelineFactory[_] =
+    Class.forName(factoryClass).newInstance().asInstanceOf[PipelineFactory[_]]
+}
