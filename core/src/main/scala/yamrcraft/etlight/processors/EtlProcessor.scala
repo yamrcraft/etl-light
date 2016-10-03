@@ -1,6 +1,6 @@
 package yamrcraft.etlight.processors
 
-import kafka.serializer.{DefaultDecoder, StringDecoder}
+import kafka.serializer.DefaultDecoder
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.kafka._
@@ -15,7 +15,7 @@ object EtlProcessor {
   def run(settings: Settings) = {
     val context = createContext(settings)
 
-    val stateManager = new KafkaStateManager(settings.etl)
+    val stateManager = new KafkaStateManager(settings.etl.state)
 
     val lastState = stateManager.readState
     logger.info(s"last persisted state: $lastState")
@@ -39,14 +39,14 @@ object EtlProcessor {
   }
 
   private def createRDD(context: SparkContext, state: KafkaOffsetsState, settings: Settings) = {
-    KafkaUtils.createRDD[String, Array[Byte], StringDecoder, DefaultDecoder](
+    KafkaUtils.createRDD[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
       context,
       settings.kafka.properties,
       state.ranges.toArray
     )
   }
 
-  private def processRDD(kafkaRDD: RDD[(String, Array[Byte])], jobId: Long, settings: Settings) = {
+  private def processRDD(kafkaRDD: RDD[(Array[Byte], Array[Byte])], jobId: Long, settings: Settings) = {
     // passed to remote workers
     val etlSettings = settings.etl
 
@@ -55,7 +55,7 @@ object EtlProcessor {
     kafkaRDD
       .foreachPartition { partition =>
         // executed at the worker
-        PartitionProcessor(jobId, TaskContext.get.partitionId(), etlSettings)
+        new PartitionProcessor(jobId, TaskContext.get.partitionId(), etlSettings)
           .processPartition(partition)
       }
 

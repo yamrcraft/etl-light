@@ -1,11 +1,12 @@
 package yamrcraft.etlight
 
 import org.apache.avro.generic.GenericRecord
+import yamrcraft.etlight.transformers.Message
 
 package object writers {
 
-  type AvroEventsWriter = EventsWriter[GenericRecord]
+  type AvroEventsWriter = Writer[Message[GenericRecord]]
 
-  type ErrorEventsWriter = EventsWriter[ErrorEvent]
+  type ErrorEventsWriter = Writer[ErrorEvent]
 
 }

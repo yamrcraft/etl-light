@@ -12,8 +12,13 @@ object Dependencies {
   val typesafeConfig = "com.typesafe" % "config" % "1.3.0"
 
   val jodaTime = "joda-time" % "joda-time" % "2.8.1"
+  val jodaConvert = "org.joda" % "joda-convert" % "1.8.1"
 
   val parquet = "com.twitter" % "parquet-avro" % "1.6.0"
+
+  val playJson = "com.typesafe.play" %% "play-json" % "2.5.8"
+
+  val json2avro = "tech.allegro.schema.json2avro" % "converter" % "0.2.3"
 
   object curator {
     val version = "2.4.0"

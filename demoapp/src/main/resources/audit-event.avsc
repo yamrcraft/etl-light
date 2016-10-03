@@ -1,0 +1,23 @@
+{
+  "name": "AuditEvent",
+  "type": "record",
+  "fields": [
+    {"name": "resource_owner", "type": ["string", "null"]},
+    {"name": "trip_id", "type": ["string", "null"]},
+    {"name": "additional_info_dict", "type": ["string", "null"]}
+    {"name": "http_response", "type": ["string", "null"]}
+    {"name": "device_id", "type": ["string", "null"]}
+    {"name": "supplier_id", "type": ["string", "null"]}
+    {"name": "resource_type", "type": ["string", "null"]}
+    {"name": "elapsed", "type": ["string", "null"]}
+    {"name": "server_fqdn", "type": ["string", "null"]}
+    {"name": "ts", "type": ["string", "null"]}
+    {"name": "user_id", "type": ["string", "null"]}
+    {"name": "uuid", "type": ["string", "null"]}
+    {"name": "result", "type": ["string", "null"]}
+    {"name": "suffix", "type": ["string", "null"]}
+    {"name": "filename", "type": ["string", "null"]}
+    {"name": "filepath", "type": ["string", "null"]}
+    {"name": "fqn", "type": ["string", "null"]}
+  ]
+}
