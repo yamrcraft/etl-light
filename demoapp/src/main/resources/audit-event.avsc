@@ -2,22 +2,22 @@
   "name": "AuditEvent",
   "type": "record",
   "fields": [
-    {"name": "resource_owner", "type": ["string", "null"]},
-    {"name": "trip_id", "type": ["string", "null"]},
-    {"name": "additional_info_dict", "type": ["string", "null"]}
-    {"name": "http_response", "type": ["string", "null"]}
-    {"name": "device_id", "type": ["string", "null"]}
-    {"name": "supplier_id", "type": ["string", "null"]}
-    {"name": "resource_type", "type": ["string", "null"]}
-    {"name": "elapsed", "type": ["string", "null"]}
-    {"name": "server_fqdn", "type": ["string", "null"]}
-    {"name": "ts", "type": ["string", "null"]}
-    {"name": "user_id", "type": ["string", "null"]}
-    {"name": "uuid", "type": ["string", "null"]}
-    {"name": "result", "type": ["string", "null"]}
-    {"name": "suffix", "type": ["string", "null"]}
-    {"name": "filename", "type": ["string", "null"]}
-    {"name": "filepath", "type": ["string", "null"]}
-    {"name": "fqn", "type": ["string", "null"]}
+    {"name": "resource_owner", "type": ["null", "string"], "default": null},
+    {"name": "trip_id", "type": ["null", "string"], "default": null},
+    {"name": "additional_info_dict", "type": ["null", "string"], "default": null},
+    {"name": "http_response", "type": ["null", "string"], "default": null},
+    {"name": "device_id", "type": ["null", "string"], "default": null},
+    {"name": "supplier_id", "type": ["null", "string"], "default": null},
+    {"name": "resource_type", "type": ["null", "string"], "default": null},
+    {"name": "elapsed", "type": ["null", "int"], "default": null},
+    {"name": "server_fqdn", "type": ["null", "string"], "default": null},
+    {"name": "ts", "type": ["null", "string"], "default": null},
+    {"name": "user_id", "type": ["null", "int" ], "default": null},
+    {"name": "uuid", "type": ["null", "string"], "default": null},
+    {"name": "result", "type": ["null", "string"], "default": null},
+    {"name": "suffix", "type": ["null", "string"], "default": null},
+    {"name": "filename", "type": ["null", "string"], "default": null},
+    {"name": "filepath", "type": ["null", "string"], "default": null},
+    {"name": "fqn", "type": ["null", "string"], "default": null}
   ]
 }

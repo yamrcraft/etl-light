@@ -3,11 +3,11 @@ package yamrcraft.etlight.transformers
 import com.typesafe.config.Config
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
+import play.api.libs.json.Json
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
-import yamrcraft.etlight.utils.TimeUtils
+import yamrcraft.etlight.utils.{FileUtils, TimeUtils}
 import yamrcraft.etlight.{ErrorType, EtlException}
+import yamrcraft.etlight.utils.ConfigConversions._
 
 class AvroTransformer(config: Config) extends Transformer[Message[GenericRecord]] {
 
@@ -15,46 +15,32 @@ class AvroTransformer(config: Config) extends Transformer[Message[GenericRecord]
 
   // config settings
   val timestampField = config.getString("timestamp-field")
+  val timestampFieldFormat = config.getString("timestamp-field-format")
+  val defaultSchemaFileName = config.getString("default-schema-file")
+  val (schemaSelectionField, schemas) = {
+    config.hasPath("schema-selection") match {
+      case true =>
+        (Some(config.getString("schema-selection.field")),
+          Some(config.getConfig("schema-selection.schemas").asMap.map {case (k,v) => (k, createSchema(v))}) )
+      case false => (None, None)
+    }
+  }
 
-  //val defaultSchemaFileName: String = config.getString("default-schema-file")
-  //val defaultSchema: Schema = new Schema.Parser().parse(new File(defaultSchemaFileName))
-  // TODO: read from file - use configuration
-  val defaultSchema: Schema = new Schema.Parser().parse(
-    """
-      |{
-      |  "name": "AuditEvent",
-      |  "type": "record",
-      |  "fields": [
-      |    {"name": "resource_owner", "type": ["null", "string"], "default": null},
-      |    {"name": "trip_id", "type": ["null", "string"], "default": null},
-      |    {"name": "additional_info_dict", "type": ["null", "string"], "default": null},
-      |    {"name": "http_response", "type": ["null", "string"], "default": null},
-      |    {"name": "device_id", "type": ["null", "string"], "default": null},
-      |    {"name": "supplier_id", "type": ["null", "string"], "default": null},
-      |    {"name": "resource_type", "type": ["null", "string"], "default": null},
-      |    {"name": "elapsed", "type": ["null", "int"], "default": null},
-      |    {"name": "server_fqdn", "type": ["null", "string"], "default": null},
-      |    {"name": "ts", "type": ["null", "string"], "default": null},
-      |    {"name": "user_id", "type": ["null", "int" ], "default": null},
-      |    {"name": "uuid", "type": ["null", "string"], "default": null},
-      |    {"name": "result", "type": ["null", "string"], "default": null},
-      |    {"name": "suffix", "type": ["null", "string"], "default": null},
-      |    {"name": "filename", "type": ["null", "string"], "default": null},
-      |    {"name": "filepath", "type": ["null", "string"], "default": null},
-      |    {"name": "fqn", "type": ["null", "string"], "default": null}
-      |  ]
-      |}
-    """.stripMargin)
+  //val schemaSelectionField = config.getString("schema-selection.field")
+  //val schemas: Map[String, String] = config.getConfig("schema-selection.schemas").asMap
+
+  val defaultSchema: Schema = createSchema(defaultSchemaFileName)
 
   @throws(classOf[EtlException])
   override def transform(key: Array[Byte], msg: Array[Byte]): Message[GenericRecord] = {
 
     try {
-      val record = converter.convertToGenericDataRecord(msg, defaultSchema)
+      val schema = getSchema(msg)
+      val record = converter.convertToGenericDataRecord(msg, schema)
 
       Message[GenericRecord](
         record,
-        defaultSchema.getName,
+        schema.getName,
         extractTimestamp(record)
       )
 
@@ -66,12 +52,24 @@ class AvroTransformer(config: Config) extends Transformer[Message[GenericRecord]
 
   override def toString(event: Array[Byte]) = new String(event, "UTF8")
 
+  private def createSchema(path: String): Schema = new Schema.Parser().parse(FileUtils.readContent(path))
+
+  private def getSchema(msg: Array[Byte]): Schema = {
+    if (schemaSelectionField.isEmpty) {
+      defaultSchema
+    } else {
+      val msgJson = Json.parse(toString(msg))
+      val selectionValue = (msgJson \ schemaSelectionField.get).asOpt[String]
+      schemas.get(selectionValue.get)
+    }
+  }
+
   @throws(classOf[EtlException])
   private def extractTimestamp(event: GenericRecord): Long = {
     try {
       (event.get(timestampField): Any) match {
         case ts: Long => ts.asInstanceOf[Long]
-        case ts: String => TimeUtils.stringTimeToLong(ts, "yyyy-MM-dd HH:mm:ss")
+        case ts: String => TimeUtils.stringTimeToLong(ts, timestampFieldFormat)
         case _ => throw new RuntimeException("timestamp field is not of either Long or String types.")
       }
     } catch {
