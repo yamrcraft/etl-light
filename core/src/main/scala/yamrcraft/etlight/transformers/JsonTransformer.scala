@@ -5,7 +5,7 @@ import play.api.libs.json.Json
 import yamrcraft.etlight.utils.TimeUtils
 import yamrcraft.etlight.{ErrorType, EtlException}
 
-class StringTransformer(config: Config) extends Transformer[Message[String]] {
+class JsonTransformer(config: Config) extends Transformer[Message[String]] {
 
   // config settings
   val timestampField = config.getString("timestamp-field")
