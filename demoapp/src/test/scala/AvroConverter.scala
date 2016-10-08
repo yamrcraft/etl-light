@@ -23,7 +23,7 @@ class AvroConverter extends FlatSpecLike {
       |    {"name": "elapsed", "type": ["null", "int"], "default": null},
       |    {"name": "server_fqdn", "type": ["null", "string"], "default": null},
       |    {"name": "ts", "type": ["null", "string"], "default": null},
-      |    {"name": "user_id", "type": ["null", "int" ], "default": null},
+      |    {"name": "user_id", "type": ["null", "string" ], "default": null},
       |    {"name": "uuid", "type": ["null", "string"], "default": null},
       |    {"name": "result", "type": ["null", "string"], "default": null},
       |    {"name": "suffix", "type": ["null", "string"], "default": null},

@@ -15,8 +15,6 @@ case class KafkaOffsetsState(
 
 class KafkaStateManager(settings: StateSettings) extends StateManager[KafkaOffsetsState] {
 
-  val fs = FileSystem.get(new Configuration())
-
   implicit val formats =
     new Formats {
       val dateFormat = DefaultFormats.lossless.dateFormat
@@ -25,14 +23,14 @@ class KafkaStateManager(settings: StateSettings) extends StateManager[KafkaOffse
     }
 
   override def readState: Option[KafkaOffsetsState] = {
-    val reader = new StateReader(settings.stateFolder, fs)
+    val reader = new StateReader(settings.stateFolder)
     val state = reader.readLastState
     state map (content => Serialization.read[KafkaOffsetsState](content))
   }
 
   override def commitState(state: KafkaOffsetsState): Unit = {
     val stateBytes = Serialization.writePretty(state).getBytes
-    val writer = new StateWriter(settings.stateFolder, settings.stateFilesToKeep, fs)
+    val writer = new StateWriter(settings.stateFolder, settings.stateFilesToKeep)
     writer.write(stateBytes, state.jobId)
   }
 

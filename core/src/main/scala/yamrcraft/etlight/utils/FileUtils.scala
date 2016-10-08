@@ -1,6 +1,5 @@
 package yamrcraft.etlight.utils
 
-import java.io.{File, FileInputStream}
 import java.net.URI
 
 import org.apache.hadoop.conf.Configuration
@@ -10,22 +9,24 @@ import scala.io.Source
 
 object FileUtils {
 
+  val config = new Configuration()
+
   /**
-    * read the content of the file specified in the given <tt>path</tt>, path could be:
+    * read the content of the file specified in the given <tt>uri</tt>, uri could be of the follwoing schemes:
     * - 'file:///local-path' - read from local file-system
-    * - otherwise - read from hadoop file-system
+    * - 'hdfs:///path - read from hadoop file-system
+    * - 's3a://authority/path - read from s3 storage
     *
-    * @param path file path
+    * @param uri file uri
     * @return the content of the file
     */
-  def readContent(path: String) = {
-    val configURI = new URI(path)
-    val fs = FileSystem.get(new Configuration())
+  def readContent(uri: String) = {
+    val fs = getFS(uri)
+    Source.fromInputStream(fs.open(new Path(uri))).mkString
+  }
 
-    configURI.getScheme match {
-      case "file" => Source.fromInputStream(new FileInputStream(new File(configURI))).mkString
-      case _ => Source.fromInputStream(fs.open(new Path(path))).mkString
-    }
+  def getFS(uri: String): FileSystem = {
+    FileSystem.get(URI.create(uri), config)
   }
 
 }

@@ -3,7 +3,7 @@ package yamrcraft.etlight.state
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.slf4j.LoggerFactory
 import yamrcraft.etlight.Settings
-import yamrcraft.etlight.utils.HdfsUtils
+import yamrcraft.etlight.utils.{FileUtils, HdfsUtils}
 
 import scala.io.Source
 
@@ -32,7 +32,7 @@ private[state] object StatePersistency {
 
 
   /* list state files sorted by state id, oldest first  */
-  def listStateFiles(stateFolder: String, fs: FileSystem): Seq[Path] = {
+  def listStateFiles(stateFolder: String): Seq[Path] = {
     def sortFunc(path1: Path, path2: Path): Boolean = {
       val (time1, bk1) = path1.getName match {
         case REGEX(x, y) => (x.toLong, !y.isEmpty)
@@ -43,6 +43,7 @@ private[state] object StatePersistency {
       (time1 < time2) || (time1 == time2 && bk1)
     }
 
+    val fs = FileUtils.getFS(stateFolder)
     val statePath = new Path(stateFolder)
     if (fs.exists(statePath)) {
       val allFiles = HdfsUtils.listFiles(statePath, fs)
@@ -54,19 +55,20 @@ private[state] object StatePersistency {
   }
 }
 
-private[state] class StateReader(stateFolder: String, fs: FileSystem) {
+private[state] class StateReader(stateFolder: String) {
   val logger = LoggerFactory.getLogger(this.getClass)
 
   import StatePersistency._
 
   def readLastState: Option[String] = {
-    val oldestFirstStateFiles = listStateFiles(stateFolder, fs)
+    val oldestFirstStateFiles = listStateFiles(stateFolder)
     logger.debug(s"state files: $oldestFirstStateFiles")
     if (oldestFirstStateFiles.isEmpty) {
       None
     } else {
       val file = oldestFirstStateFiles.last
-      logger.info(s"state file being read: ${file}")
+      logger.info(s"state file being read: $file")
+      val fs = FileUtils.getFS(stateFolder)
       val fis = fs.open(file)
       val content = Source.fromInputStream(fis).mkString
       Some(content)
@@ -76,7 +78,7 @@ private[state] class StateReader(stateFolder: String, fs: FileSystem) {
 
 }
 
-private[state] class StateWriter(stateFolder: String, stateFilesToKeep: Int, fs: FileSystem) {
+private[state] class StateWriter(stateFolder: String, stateFilesToKeep: Int) {
 
   val logger = LoggerFactory.getLogger(this.getClass)
   val MAX_ATTEMPTS = 3
@@ -85,6 +87,8 @@ private[state] class StateWriter(stateFolder: String, stateFilesToKeep: Int, fs:
     val tempFile = new Path(stateFolder, "temp")
     val stateFile = StatePersistency.stateFile(stateFolder, stateId)
     val backupFile = StatePersistency.stateBackupFile(stateFolder, stateId)
+
+    val fs = FileUtils.getFS(stateFolder)
 
     // write to temp file and rename to avoid state file corruption in case of a crash
 
@@ -110,7 +114,7 @@ private[state] class StateWriter(stateFolder: String, stateFilesToKeep: Int, fs:
     logger.info(s"state was renamed from $tempFile to $stateFile")
 
     // delete old state files
-    val oldestFirstStateFiles = StatePersistency.listStateFiles(stateFolder, fs)
+    val oldestFirstStateFiles = StatePersistency.listStateFiles(stateFolder)
     if (oldestFirstStateFiles.size > stateFilesToKeep) {
       oldestFirstStateFiles.take(oldestFirstStateFiles.size - stateFilesToKeep).foreach { file =>
         logger.info(s"deleting old state file: $file")

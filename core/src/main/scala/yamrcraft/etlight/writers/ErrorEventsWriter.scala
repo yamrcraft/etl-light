@@ -2,10 +2,10 @@ package yamrcraft.etlight.writers
 
 import java.io.OutputStream
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
 import org.json4s.jackson.Serialization
 import org.json4s.{DefaultFormats, Formats, ShortTypeHints}
+import yamrcraft.etlight.utils.FileUtils
 
 
 case class ErrorEvent(
@@ -18,9 +18,10 @@ case class ErrorEvent(
 /**
   * Lazy error events writer - file writer is created on the first call to write.
   */
-class ErrorEventWriter(folder: String, jobId: Long, partitionId: Int, fs: FileSystem = FileSystem.get(new Configuration()))
+class ErrorEventWriter(folder: String, jobId: Long, partitionId: Int)
   extends ErrorEventsWriter {
 
+  val fs = FileUtils.getFS(folder)
 
   private var writer: Option[OutputStream] = None
 

@@ -26,9 +26,6 @@ class AvroTransformer(config: Config) extends Transformer[Message[GenericRecord]
     }
   }
 
-  //val schemaSelectionField = config.getString("schema-selection.field")
-  //val schemas: Map[String, String] = config.getConfig("schema-selection.schemas").asMap
-
   val defaultSchema: Schema = createSchema(defaultSchemaFileName)
 
   @throws(classOf[EtlException])
@@ -60,7 +57,7 @@ class AvroTransformer(config: Config) extends Transformer[Message[GenericRecord]
     } else {
       val msgJson = Json.parse(toString(msg))
       val selectionValue = (msgJson \ schemaSelectionField.get).asOpt[String]
-      schemas.get(selectionValue.get)
+      schemas.get.getOrElse(selectionValue.get, defaultSchema)
     }
   }
 

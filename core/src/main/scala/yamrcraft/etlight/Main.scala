@@ -1,15 +1,8 @@
 package yamrcraft.etlight
 
-import java.io.{File, FileInputStream}
-import java.net.URI
-
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
 import org.slf4j.LoggerFactory
 import yamrcraft.etlight.processors.EtlProcessor
 import yamrcraft.etlight.utils.{DLock, FakeLock, FileUtils}
-
-import scala.io.Source
 
 object Main {
 
