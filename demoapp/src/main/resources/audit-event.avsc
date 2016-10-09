@@ -9,10 +9,10 @@
     {"name": "device_id", "type": ["null", "string"], "default": null},
     {"name": "supplier_id", "type": ["null", "string"], "default": null},
     {"name": "resource_type", "type": ["null", "string"], "default": null},
-    {"name": "elapsed", "type": ["null", "int"], "default": null},
+    {"name": "elapsed", "type": ["null", "string"], "default": null},
     {"name": "server_fqdn", "type": ["null", "string"], "default": null},
     {"name": "ts", "type": ["null", "string"], "default": null},
-    {"name": "user_id", "type": ["null", "string", "int" ], "default": null},
+    {"name": "user_id", "type": ["null", "string" ], "default": null},
     {"name": "uuid", "type": ["null", "string"], "default": null},
     {"name": "result", "type": ["null", "string"], "default": null}
   ]
