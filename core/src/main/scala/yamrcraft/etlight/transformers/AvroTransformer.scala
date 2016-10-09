@@ -4,8 +4,7 @@ import com.typesafe.config.Config
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
 import play.api.libs.json.Json
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter
-import yamrcraft.etlight.utils.{FileUtils, TimeUtils}
+import yamrcraft.etlight.utils.{FileUtils, JsonAvroConverter, TimeUtils}
 import yamrcraft.etlight.{ErrorType, EtlException}
 import yamrcraft.etlight.utils.ConfigConversions._
 
