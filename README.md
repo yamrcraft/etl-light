@@ -1,10 +1,12 @@
 # ETL Light
 
-A light and effective ETL job based on Spark, tailored for use-cases where the source is Kafka and the sink is either HDFS or Amazon S3.
+A light and effective ETL job based on Apache Spark, tailored for use-cases where the source is Kafka and the sink is either HDFS or Amazon S3.
 
-Features:
+**Features:**
 
 * **HDFS/S3 Sink:** write can be done to both HDFS and Amazon S3 by using different URL schemes ('hdfs://', 's3://') in relevant configuration entries.
+
+* **Configurable and Customizable:** configurable through application.conf file (see example at: core/main/resources), both transformer and writer classes can be replaced through 'pipeline' configuration.
 
 * **Scalable:** by leveraging Spark framework, scalability is achieved by default. Using Kafka RDD source enables maximum efficiency having as many executors as the number of topics partitions (can be configured for less). 
 
@@ -32,9 +34,28 @@ A single job goes through the following steps:
 * Each partition processing transforms available events read from Kafka into an Avro GenericRecord and saves them into a Parquet format file partitioned by type (using configuration to map event types into base folder names) and time (using a timestamp field of the read events to map into folder time partition).
 * Only after successful processing of all partitions - a new state file is saved in target storage (e.g. HDFS/S3) to be used as a starting point by the next job run.
 
+### **Pipeline, Writers and Transformers:**
+
+A Pipeline (yamrcraft.etlight.pipeline.Pipeline) is a processor of individual event as it was extracted from Kafka source (given as a raw byte array type). it is a composition of a Transformer and Writer instances where the output of the Transformer is the input of the Writer.
+
+A Pipeline instance is created by an implementation of yamrcraft.etlight.pipeline.PipelineFactory.
+
+A PipelineFactory class must be configured in the provided job' configuration file (application.conf). 
+  
+There are 2 implementations of the PipelineFactory trait:
+
+* JsonPipelineFactory:
+    Creates a Pipeline that is composed of a JsonTransformer and TimePartitioningWriter (configured with a string writer).
+    Output is a time partitioned folder structure containing files with string format (Json events).
+* ParquetPipelineFactory - 
+    Creates a Pipeline that is composed of a AvroTransformer and TimePartitioningWriter (configured with a parquet writer).
+    Output is a time partitioned folder structure containing files with Parquet format.
+
+Different compositions of Transformers and Writers can be built into Pipelines as needed.
+
 ## Configuration
 
-See configuration example under: core/src/main/resources/application.conf
+See configuration examples under: core/src/main/resources
 
 **spark.conf:** properties used to directly configure Spark settings, passed to SparkConf upon construction.
 
@@ -55,7 +76,13 @@ See configuration example under: core/src/main/resources/application.conf
 **etl.pipeline.writer.config:** writer configurations. 
 
 
-## Running a single job using spark-submit
+## Build
+
+Generates an uber jar ready to be used for running as a Spark job:
+
+    $ sbt core/assembly  
+
+## Run a single job (using spark-submit)
 
 Copy assembly jar and application.conf file into \<deploy folder\>. 
  
@@ -69,6 +96,6 @@ Run in **yarn-cluster** mode (running driver in yarn application master):
     $ cd <deploy folder>
     $ spark-submit --driver-java-options "-DSPARK_YARN_MODE=true" --master yarn-cluster <assembly jar> <application.conf>
 
-## Running periodically using 'oozie' job-scheduler
+## Run periodically (using 'oozie' job-scheduler)
 
 [TBD]
