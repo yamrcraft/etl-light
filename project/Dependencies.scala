@@ -20,6 +20,8 @@ object Dependencies {
 
   val json2avro = "tech.allegro.schema.json2avro" % "converter" % "0.2.3"
 
+  val httpcore =  "org.apache.httpcomponents" % "httpcore" % "4.4.1"
+
   object curator {
     val version = "2.4.0"
     val framework = "org.apache.curator" % "curator-framework" % version

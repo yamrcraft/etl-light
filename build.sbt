@@ -22,6 +22,7 @@ lazy val core = (project in file("core"))
       curator.framework,
       enumeratum.enumeratum,
       enumeratum.enumeratumPlay,
+      httpcore,
       spark.streamingKafka.exclude("org.spark-project.spark", "unused")),
     providedDependencies(spark.core, spark.streaming),
     assemblyMergeStrategy in assembly := {
