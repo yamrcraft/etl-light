@@ -52,8 +52,9 @@ object EtlProcessor {
 
     logger.info(s"RDD processing started [rdd=${kafkaRDD.id}, jobId=$jobId]")
 
-    kafkaRDD
-      .foreachPartition { partition =>
+    val rdd = settings.etl.maxNumOfOutputFiles.map(kafkaRDD.coalesce(_)).getOrElse(kafkaRDD)
+
+    rdd.foreachPartition { partition =>
         // executed at the worker
         new PartitionProcessor(jobId, TaskContext.get.partitionId(), etlSettings)
           .processPartition(partition)
