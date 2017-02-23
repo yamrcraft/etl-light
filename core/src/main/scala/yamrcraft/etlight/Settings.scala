@@ -5,6 +5,7 @@ import yamrcraft.etlight.pipeline.PipelineFactory
 import yamrcraft.etlight.utils.ConfigConversions._
 
 import scala.collection.JavaConversions._
+import scala.util.Try
 
 class Settings(configContent: String) extends Serializable {
   val config = ConfigFactory.parseString(configContent)
@@ -45,6 +46,7 @@ case class EtlSettings(
   lock: LockSettings,
   state: StateSettings,
   errorsFolder: String,
+  maxNumOfOutputFiles: Option[Int],
   pipeline: PipelineSettings
 )
 
@@ -62,6 +64,7 @@ object EtlSettings {
         config.getInt("state.files-to-keep")
       ),
       errorsFolder = config.getString("errors-folder"),
+      maxNumOfOutputFiles = Try{config.getInt("max-num-of-output-files")}.toOption,
       pipeline = PipelineSettings(
         config.getString("pipeline.factory-class"),
         config.getConfig("pipeline.transformer.config"),
