@@ -14,12 +14,11 @@ services:
     mem_limit: 512m
     depends_on:
       - zookeeper
-    #HOSTNAME_COMMAND: "ifconfig en0 | awk '{ print $2}' | grep -E -o '([0-9]{1,3}[\\.]){3}[0-9]{1,3}'"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_NUM_PARTITIONS: 2
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_ADVERTISED_HOST_NAME: 192.168.202.128
+      KAFKA_ADVERTISED_HOST_NAME: $HOST_NAME  # set by docker-compose.sh
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     ports:
