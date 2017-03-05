@@ -42,4 +42,10 @@ object Dependencies {
     val enumeratumPlay = "com.beachape" %% "enumeratum-play" % version
   }
 
+  //val testcontainers = "org.testcontainers" % "testcontainers" % "1.1.9"
+  //val testcontainers_compose = "org.testcontainers" % "docker-compose" % "0.9.9"
+
+  val testcontainers = "com.dimafeng" %% "testcontainers-scala" % "0.4.1"
+
+  val kafka_client = "org.apache.kafka" % "kafka-clients" % "0.10.1.0"
 }

@@ -26,12 +26,12 @@ class PartitionProcessor(jobId: Long, partitionId: Int, settings: EtlSettings) {
         pipeline.processMessage(key, value)
 
       } catch {
-        case e@(_: EtlException) =>
+        case e@(_: Exception) =>
           logger.error("event processing error", e)
           val errorType = e match {
             case ex: EtlException => ex.errorType.toString
-//            case ex: IOException => ErrorType.WriteError.toString
-//            case _ => ErrorType.SystemError.toString
+            case _ : IOException => ErrorType.WriteError.toString
+            case _ => ErrorType.SystemError.toString
           }
           val cause = Try(e.getCause.getMessage).getOrElse("")
           val errorEvent = ErrorEvent(System.currentTimeMillis(), errorType, Some(cause), pipeline.transformer.toString(value))

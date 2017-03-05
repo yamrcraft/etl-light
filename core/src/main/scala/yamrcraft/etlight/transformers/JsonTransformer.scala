@@ -13,14 +13,17 @@ class JsonTransformer(config: Config) extends Transformer[Message[String]] {
 
   @throws(classOf[EtlException])
   override def transform(key: Array[Byte], msg: Array[Byte]): Message[String] = {
-    val msgStr = toString(msg)
-    val msgJson = Json.parse(msgStr)
-    val timestamp: Option[String] = (msgJson \ timestampField).asOpt[String]
-    timestamp match {
-      case ts: Option[String] => Message(msgStr, "AuditEvent", TimeUtils.stringTimeToLong(ts.get, timestampFieldFormat))
-      case _ => throw new EtlException(ErrorType.TransformationError)
+    try {
+      val msgStr = toString(msg)
+      val msgJson = Json.parse(msgStr)
+      val timestamp: Option[String] = (msgJson \ timestampField).asOpt[String]
+      timestamp match {
+        case Some(event) => Message(msgStr, "AuditEvent", TimeUtils.stringTimeToLong(event, timestampFieldFormat))
+        case None => throw new EtlException(ErrorType.TransformationError)
+      }
+    } catch {
+      case e: Exception => throw new EtlException(ErrorType.TransformationError, e)
     }
-
   }
 
   override def toString(msg: Array[Byte]) = new String(msg, "UTF8")
