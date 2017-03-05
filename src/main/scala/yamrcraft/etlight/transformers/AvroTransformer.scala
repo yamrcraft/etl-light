@@ -4,9 +4,9 @@ import com.typesafe.config.Config
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
 import play.api.libs.json.Json
+import yamrcraft.etlight.utils.ConfigConversions._
 import yamrcraft.etlight.utils.{FileUtils, JsonAvroConverter, TimeUtils}
 import yamrcraft.etlight.{ErrorType, EtlException}
-import yamrcraft.etlight.utils.ConfigConversions._
 
 class AvroTransformer(config: Config) extends Transformer[Message[GenericRecord]] {
 
