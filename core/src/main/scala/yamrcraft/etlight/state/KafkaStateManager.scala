@@ -1,8 +1,6 @@
 package yamrcraft.etlight.state
 
 import kafka.common.TopicAndPartition
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
 import org.apache.spark.streaming.kafka.{KafkaCluster, OffsetRange}
 import org.json4s.jackson.Serialization
 import org.json4s.{DefaultFormats, Formats, ShortTypeHints}
@@ -13,7 +11,7 @@ case class KafkaOffsetsState(
   ranges: List[OffsetRange]
 ) extends State
 
-class KafkaStateManager(settings: StateSettings) extends StateManager[KafkaOffsetsState] {
+object StateSerde {
 
   implicit val formats =
     new Formats {
@@ -22,14 +20,21 @@ class KafkaStateManager(settings: StateSettings) extends StateManager[KafkaOffse
       override val typeHintFieldName = "type"
     }
 
+  def serialize(state: KafkaOffsetsState) = Serialization.writePretty(state).getBytes
+
+  def deserialize(content: String) = Serialization.read[KafkaOffsetsState](content)
+}
+
+class KafkaStateManager(settings: StateSettings) extends StateManager[KafkaOffsetsState] {
+
   override def readState: Option[KafkaOffsetsState] = {
     val reader = new StateReader(settings.stateFolder)
     val state = reader.readLastState
-    state map (content => Serialization.read[KafkaOffsetsState](content))
+    state map (content => StateSerde.deserialize(content))
   }
 
   override def commitState(state: KafkaOffsetsState): Unit = {
-    val stateBytes = Serialization.writePretty(state).getBytes
+    val stateBytes = StateSerde.serialize(state)
     val writer = new StateWriter(settings.stateFolder, settings.stateFilesToKeep)
     writer.write(stateBytes, state.jobId)
   }

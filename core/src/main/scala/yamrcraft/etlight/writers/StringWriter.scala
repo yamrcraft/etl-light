@@ -17,6 +17,7 @@ class StringWriter(tempFile: String, outputFile: String) extends Writer[String] 
     }
 
     writer.get.writeUTF(event)
+    writer.get.writeChar('\n')
   }
 
   override def commit(): Unit = {
