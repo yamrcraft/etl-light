@@ -6,8 +6,6 @@ import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 import yamrcraft.etlight.state.{KafkaOffsetsState, StateSerde}
 
-import scala.sys.process._
-
 class JsonETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
 
   val confFile = "json_application.conf"

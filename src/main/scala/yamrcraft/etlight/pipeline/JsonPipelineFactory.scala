@@ -1,8 +1,7 @@
 package yamrcraft.etlight.pipeline
 
-import org.apache.avro.generic.GenericRecord
 import yamrcraft.etlight.PipelineSettings
-import yamrcraft.etlight.transformers.{Message, JsonTransformer}
+import yamrcraft.etlight.transformers.{JsonTransformer, Message}
 import yamrcraft.etlight.writers.{StringWriter, TimePartitioningWriter}
 
 class JsonPipelineFactory extends PipelineFactory[Message[String]] {

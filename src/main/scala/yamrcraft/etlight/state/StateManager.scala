@@ -1,6 +1,6 @@
 package yamrcraft.etlight.state
 
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
 import org.slf4j.LoggerFactory
 import yamrcraft.etlight.Settings
 import yamrcraft.etlight.utils.{FileUtils, HdfsUtils}
