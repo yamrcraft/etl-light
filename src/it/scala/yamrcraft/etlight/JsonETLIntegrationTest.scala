@@ -15,7 +15,7 @@ class JsonETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
 
   override def beforeAll(): Unit = {
     // run containers
-    val code = DockerUtils.dockerComposeUp
+    val code = DockerEnv.dockerComposeUp
     info(s"starting docker containers [exit code: $code]")
 
     // ingest 100 Json events
@@ -30,13 +30,12 @@ class JsonETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
     publishToKafka("events", List(("my-key".getBytes(), """{"name": "joe", "location": "somewhere" }""".getBytes)))
     info("Json with missing timestamp event ingested")
 
-    //Thread.sleep(5000)
-    val sparkExitCode = runSparkJob(confFile)
+    val sparkExitCode = DockerEnv.runSparkJob(confFile)
     info(s"spark job run [exit code: $sparkExitCode]")
   }
 
   override def afterAll(): Unit = {
-    val code = DockerUtils.dockerComposeDown
+    val code = DockerEnv.dockerComposeDown
     info(s"stopping docker containers [exit code: $code]")
   }
 
@@ -64,10 +63,6 @@ class JsonETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
     assert(state.ranges.foldLeft(0)((a,b) => a + b.untilOffset.asInstanceOf[Int]) === 102)
   }
 
-  private def runSparkJob(confFile: String): Int = {
-    s"docker exec  it_spark_1 /usr/spark-2.1.0/bin/spark-submit /usr/etl-light/etlight-assembly-0.1.0.jar  /usr/etl-light/resources/$confFile".!
-  }
-
   private def publishToKafka(topic: String, events: List[(Array[Byte], Array[Byte])]) = {
     val props = new Properties()
     props.put("bootstrap.servers", "localhost:9092")
@@ -84,8 +79,7 @@ class JsonETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
   }
 
   private def readStateFile(stateFile: String): KafkaOffsetsState = {
-    val stateFileContent = s"docker exec it_spark_1 cat $stateFile".!!
-    StateSerde.deserialize(stateFileContent)
+    StateSerde.deserialize(DockerEnv.readFileFromDocker(stateFile))
   }
 
 }
