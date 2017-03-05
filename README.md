@@ -80,9 +80,9 @@ See configuration examples under: core/src/main/resources
 
 Generates an uber jar ready to be used for running as a Spark job:
 
-    $ sbt core/assembly  
+    $ sbt assembly  
 
-## Run a single job (using spark-submit)
+## Run
 
 Copy assembly jar and application.conf file into \<deploy folder\>. 
  
@@ -99,3 +99,9 @@ Run in **yarn-cluster** mode (running driver in yarn application master):
 ## Run periodically (using 'oozie' job-scheduler)
 
 [TBD]
+
+## Test
+
+Testing is based on integration tests running docker containers, docker-compose is used to start zookeeper, kafka and spark (standalone mode) container instances.
+ 
+    $ sbt it:test
