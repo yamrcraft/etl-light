@@ -15,9 +15,6 @@ lazy val integrationTestSettings: Seq[Setting[_]] = Defaults.itSettings ++ Seq(
 )
 
 lazy val etlight = (project in file("."))
-  .aggregate(core, demoapp)
-
-lazy val core = (project in file("core"))
   .configs(IntegrationTest)
   .settings(commonSettings, integrationTestSettings)
   .settings(
@@ -43,18 +40,3 @@ lazy val core = (project in file("core"))
     }
   )
 
-lazy val demoapp = (project in file("demoapp"))
-  .dependsOn(`core`)
-  .settings(commonSettings: _*)
-  .settings(
-    compileDependencies(
-      playJson,
-      json2avro
-    ),
-    assemblyMergeStrategy in assembly := {
-      case "application.conf"  => MergeStrategy.discard
-      case x =>
-        val oldStrategy = (assemblyMergeStrategy in assembly).value
-        oldStrategy(x)
-    }
-  )
