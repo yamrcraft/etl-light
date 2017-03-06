@@ -35,8 +35,8 @@ class JsonETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
   }
 
   override def afterAll(): Unit = {
-//    val code = DockerEnv.dockerComposeDown
-//    info(s"stopping docker containers [exit code: $code]")
+    val code = DockerEnv.dockerComposeDown
+    info(s"stopping docker containers [exit code: $code]")
   }
 
   "an ETL job consuming JSON events from Kafka" should "write parsed events into output folder" in {
