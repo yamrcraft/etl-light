@@ -104,4 +104,5 @@ Run in **yarn-cluster** mode (running driver in yarn application master):
 
 Testing is based on integration tests running docker containers, docker-compose is used to start zookeeper, kafka and spark (standalone mode) container instances.
  
+    $ sbt assembly
     $ sbt it:test
