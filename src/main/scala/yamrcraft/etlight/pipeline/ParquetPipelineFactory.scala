@@ -3,7 +3,7 @@ package yamrcraft.etlight.pipeline
 import org.apache.avro.generic.GenericRecord
 import yamrcraft.etlight.PipelineSettings
 import yamrcraft.etlight.transformers.{AvroTransformer, Message}
-import yamrcraft.etlight.writers.{ParquetWriter, TimePartitioningWriter}
+import yamrcraft.etlight.writers.{AvroToParquetWriter, TimePartitioningWriter}
 
 class ParquetPipelineFactory extends PipelineFactory[Message[GenericRecord]] {
 
@@ -14,7 +14,7 @@ class ParquetPipelineFactory extends PipelineFactory[Message[GenericRecord]] {
         settings.writerConfig,
         jobId,
         partitionId,
-        (tempFile, outputFile) => new ParquetWriter(tempFile, outputFile))
+        (tempFile, outputFile) => new AvroToParquetWriter(tempFile, outputFile))
     )
 
 }

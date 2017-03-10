@@ -5,6 +5,7 @@ import java.util.Properties
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 import yamrcraft.etlight.state.{KafkaOffsetsState, StateSerde}
+import scala.sys.process._
 
 class JsonETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
 
@@ -40,7 +41,7 @@ class JsonETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
   }
 
   "an ETL job consuming JSON events from Kafka" should "write parsed events into output folder" in {
-//    val outputPath = "/var/etl/output/events/AuditEvent/2017/02/21/07/"
+//    val outputPath = "/var/etl/output/events/users_events/2017/02/21/07/"
 //    val output: String = s"""docker exec it_spark_1 find $outputPath -name '*.txt'  -type f -exec cat {} + """.!!
 //    println("output = " + output)
 //    println(output.split('\n').length)

@@ -14,13 +14,17 @@ object Dependencies {
   val jodaTime = "joda-time" % "joda-time" % "2.8.1"
   val jodaConvert = "org.joda" % "joda-convert" % "1.8.1"
 
-  val parquet = "com.twitter" % "parquet-avro" % "1.6.0"
+  val parquetAvro = "org.apache.parquet" % "parquet-avro" % "1.9.0"
+
+  val parquetProto = "org.apache.parquet" % "parquet-protobuf" % "1.9.0"
+
+  val protobuf = "com.google.protobuf" % "protobuf-java" % "3.1.0"
 
   val playJson = "com.typesafe.play" %% "play-json" % "2.5.8"
 
   val json2avro = "tech.allegro.schema.json2avro" % "converter" % "0.2.3"
 
-  val httpcore =  "org.apache.httpcomponents" % "httpcore" % "4.4.1"
+  //val httpcore =  "org.apache.httpcomponents" % "httpcore" % "4.4.1"
 
   object curator {
     val version = "2.4.0"
@@ -41,11 +45,6 @@ object Dependencies {
     val enumeratum = "com.beachape" %% "enumeratum" % version
     val enumeratumPlay = "com.beachape" %% "enumeratum-play" % version
   }
-
-  //val testcontainers = "org.testcontainers" % "testcontainers" % "1.1.9"
-  //val testcontainers_compose = "org.testcontainers" % "docker-compose" % "0.9.9"
-
-  val testcontainers = "com.dimafeng" %% "testcontainers-scala" % "0.4.1"
 
   val kafka_client = "org.apache.kafka" % "kafka-clients" % "0.10.1.0"
 }

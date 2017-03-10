@@ -3,11 +3,11 @@ package yamrcraft.etlight.writers
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
 import org.apache.hadoop.fs.Path
+import org.apache.parquet.avro.AvroParquetWriter
 import org.slf4j.LoggerFactory
-import parquet.avro.AvroParquetWriter
 import yamrcraft.etlight.utils.FileUtils
 
-class ParquetWriter(tempFile: String, outputFile: String) extends Writer[GenericRecord] {
+class AvroToParquetWriter(tempFile: String, outputFile: String) extends Writer[GenericRecord] {
 
   val logger = LoggerFactory.getLogger(this.getClass)
 

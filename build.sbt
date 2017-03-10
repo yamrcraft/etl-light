@@ -1,6 +1,7 @@
 import Dependencies._
 
 //resolvers += "Maven Central" at "https://repo1.maven.org/maven2/"
+//resolvers += "Twitter Maven" at "http://maven.twttr.com"
 
 lazy val commonSettings = Seq(
   organization := "yamrcraft",
@@ -20,7 +21,8 @@ lazy val etlight = (project in file("."))
   .settings(
     compileDependencies(
       typesafeConfig,
-      parquet,
+      parquetAvro,
+      parquetProto,
       jodaTime,
       jodaConvert,
       playJson,
@@ -28,7 +30,6 @@ lazy val etlight = (project in file("."))
       curator.framework,
       enumeratum.enumeratum,
       enumeratum.enumeratumPlay,
-      httpcore,
       spark.streamingKafka.exclude("org.spark-project.spark", "unused")),
     providedDependencies(spark.core, spark.streaming),
     testDependencies(kafka_client),
