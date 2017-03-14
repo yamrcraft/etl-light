@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_package = "examples.protobuf";
+
+import "google/protobuf/timestamp.proto";
+
+message User {
+  int32 id = 1;
+  google.protobuf.Timestamp time = 2;
+  string name = 3;
+  string family_name = 4;
+  string address = 5;
+  string city = 6;
+  string country = 7;
+}
+

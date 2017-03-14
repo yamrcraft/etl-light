@@ -1,0 +1,37 @@
+version: '2'
+
+services:
+
+  zookeeper:
+    image: zookeeper:3.4.9
+    restart: always
+    mem_limit: 512m
+    ports:
+      - 2181:2181
+
+  kafka:
+    image: wurstmeister/kafka:0.10.1.1
+    mem_limit: 512m
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_NUM_PARTITIONS: 2
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_ADVERTISED_HOST_NAME: $HOST_NAME  # set by docker-compose.sh
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    ports:
+      - 9092:9092
+      - 9001:9001
+
+  spark:
+    image: gettyimages/spark:2.1.0-hadoop-2.7
+    depends_on:
+      - kafka
+    volumes:
+      - ../../target/scala-2.11/etlite-assembly-0.1.0.jar:/usr/etl-light/etlite-assembly-0.1.0.jar
+      - ../../../examples/protobuf/target/scala-2.11/proto-example-assembly-0.1.0.jar:/usr/etl-light/proto-example-assembly-0.1.0.jar
+      - ./resources:/usr/etl-light/resources/
+    ports:
+      - 8080:8080

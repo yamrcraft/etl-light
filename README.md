@@ -1,6 +1,6 @@
 # ETL Light
 
-A light and effective ETL job based on Apache Spark, tailored for use-cases where the source is Kafka and the sink is either HDFS or Amazon S3.
+Light and effective Extract-Transform-Load job based on Apache Spark, tailored for use-cases where the source is Kafka and the sink is hadoop file system implementation, such as HDFS, Amazon S3 or local FS (useful for testing).
 
 **Features:**
 
@@ -36,9 +36,9 @@ A single job goes through the following steps:
 
 ### **Pipeline, Writers and Transformers:**
 
-A Pipeline (yamrcraft.etlight.pipeline.Pipeline) is a processor of individual event as it was extracted from Kafka source (given as a raw byte array type). it is a composition of a Transformer and Writer instances where the output of the Transformer is the input of the Writer.
+A Pipeline (yamrcraft.etlite.pipeline.Pipeline) is a processor of individual event as it was extracted from Kafka source (given as a raw byte array type). it is a composition of a Transformer and Writer instances where the output of the Transformer is the input of the Writer.
 
-A Pipeline instance is created by an implementation of yamrcraft.etlight.pipeline.PipelineFactory.
+A Pipeline instance is created by an implementation of yamrcraft.etlite.pipeline.PipelineFactory.
 
 A PipelineFactory class must be configured in the provided job' configuration file (application.conf). 
   
@@ -55,7 +55,7 @@ Different compositions of Transformers and Writers can be built into Pipelines a
 
 ## Configuration
 
-See configuration examples under: core/src/main/resources
+See configuration examples under: etlite/src/main/resources
 
 **spark.conf:** properties used to directly configure Spark settings, passed to SparkConf upon construction.
 
@@ -78,13 +78,13 @@ See configuration examples under: core/src/main/resources
 
 ## Build
 
-Generates an uber jar ready to be used for running as a Spark job:
+Generates an uber jar ready to be used for running as a Spark job (depending on specific use case might require extension, see examples/protobuf as an example for ETL that translates specific protobuf events):
 
-    $ sbt assembly  
+    $ sbt etlite/assembly  
 
 ## Run
 
-Copy assembly jar and application.conf file into \<deploy folder\>. 
+Copy 'etlite' assembly jar and your relevant application.conf file into target folder, e.g. \<deploy folder\>. 
  
 Run in **yarn client** mode (running driver locally):
 
@@ -102,7 +102,18 @@ Run in **yarn-cluster** mode (running driver in yarn application master):
 
 ## Test
 
-Testing is based on integration tests running docker containers, docker-compose is used to start zookeeper, kafka and spark (standalone mode) container instances.
+Integration (black-box) tests can be found under 'etlite' project: src/it.
+
+Each integration test generally goes through these steps:
+1. runs a docker-compose at the beginning to start zookeeper, kafka and spark containers.
+2. ingests events that are relevant for the specific test case into kafka (e.g. json, protobuf).
+3. runs the relevant ETL spark job inside the spark container, the job to run is determined by the provided assembly jar and configuration file (application.conf).
+4. tests outcomes of the ETL job run.
+5. brings all docker containers down.
+
+To run all integration tests, create the required assembly being used by the test case, for example, JsonETLIntegrationTest runs the 'etlite' assembly jar while ProtobufETLIntegrationTest runs the 'proto-example' assembly jar.
  
-    $ sbt assembly
-    $ sbt it:test
+    $ sbt etlite/assembly           # creates the etlite assembly jar required by the Json integration test
+    $ sbt proto-example/assembly    # creates the proto-example assembly jar required by the Protobuf integration test
+    $ sbt etlite/it:test            # runs all integration tests under src/it
+    

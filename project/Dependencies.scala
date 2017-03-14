@@ -18,7 +18,7 @@ object Dependencies {
 
   val parquetProto = "org.apache.parquet" % "parquet-protobuf" % "1.9.0"
 
-  val protobuf = "com.google.protobuf" % "protobuf-java" % "3.1.0"
+  val protobuf = "com.google.protobuf" % "protobuf-java" % "3.2.0"
 
   val playJson = "com.typesafe.play" %% "play-json" % "2.5.8"
 
@@ -37,7 +37,7 @@ object Dependencies {
     val core = "org.apache.spark" %% "spark-core" % version
     val streaming = "org.apache.spark" %% "spark-streaming" % version
     val streamingKafka = "org.apache.spark" %% "spark-streaming-kafka-0-8" % version
-    val testingBase = "com.holdenkarau" % "spark-testing-base_2.11" % "1.5.2_0.3.1"
+    //val testingBase = "com.holdenkarau" % "spark-testing-base_2.11" % "1.5.2_0.3.1"
   }
 
   object enumeratum {
