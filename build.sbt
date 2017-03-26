@@ -38,6 +38,10 @@ lazy val etlite = (project in file("etlite"))
     testDependencies(
       kafka_client
     ),
+    mainClass in assembly := Some("yamrcraft.etlite.Main"),
+    assemblyShadeRules in assembly := Seq(
+      ShadeRule.rename("com.google.protobuf.*" -> "com.google.shaded.protobuf.@1").inAll
+    ),
     assemblyMergeStrategy in assembly := {
       case "application.conf" => MergeStrategy.discard
       case x =>
@@ -46,23 +50,26 @@ lazy val etlite = (project in file("etlite"))
     }
   )
 
-lazy val `proto-example` = (project in file("examples/protobuf"))
-  .dependsOn(`etlite`, `proto-messages`)
-  .settings(commonSettings: _*)
-  .settings(
-    compileDependencies(
-      protobuf
-    ),
-    mainClass in assembly := Some("yamrcraft.etlite.Main"),
-    assemblyShadeRules in assembly := Seq(
-      ShadeRule.rename("com.google.protobuf.*" -> "shadeproto.@1").inAll
-    )
-  )
+//lazy val `proto-example` = (project in file("examples/protobuf"))
+//  .dependsOn(`etlite`, `proto-messages`)
+//  .settings(commonSettings: _*)
+//  .settings(
+//    compileDependencies(
+//      protobuf
+//    ),
+//    mainClass in assembly := Some("yamrcraft.etlite.Main"),
+//    assemblyShadeRules in assembly := Seq(
+//      ShadeRule.rename("com.google.protobuf.*" -> "com.google.shaded.protobuf.@1").inAll
+//    )
+//  )
 
 lazy val `proto-messages` = (project in file("examples/protobuf-messages"))
   .settings(commonSettings: _*)
   .settings(
     compileDependencies(
       protobuf
+    ),
+    assemblyShadeRules in assembly := Seq(
+      ShadeRule.rename("com.google.protobuf.*" -> "com.google.shaded.protobuf.@1").inAll
     )
   )

@@ -32,6 +32,7 @@ services:
     volumes:
       - ../../target/scala-2.11/etlite-assembly-0.1.0.jar:/usr/etl-light/etlite-assembly-0.1.0.jar
       - ../../../examples/protobuf/target/scala-2.11/proto-example-assembly-0.1.0.jar:/usr/etl-light/proto-example-assembly-0.1.0.jar
+      - ../../../examples/protobuf-messages/target/scala-2.11/proto-messages-assembly-0.1.0.jar:/usr/etl-light/proto-messages-assembly-0.1.0.jar
       - ./resources:/usr/etl-light/resources/
     ports:
       - 8080:8080

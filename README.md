@@ -96,24 +96,20 @@ Run in **yarn-cluster** mode (running driver in yarn application master):
     $ cd <deploy folder>
     $ spark-submit --driver-java-options "-DSPARK_YARN_MODE=true" --master yarn-cluster <assembly jar> <application.conf>
 
-## Run periodically (using 'oozie' job-scheduler)
-
-[TBD]
 
 ## Test
 
 Integration (black-box) tests can be found under 'etlite' project: src/it.
 
 Each integration test generally goes through these steps:
-1. runs a docker-compose at the beginning to start zookeeper, kafka and spark containers.
+1. docker-compose up - starting zookeeper, kafka and spark containers.
 2. ingests events that are relevant for the specific test case into kafka (e.g. json, protobuf).
-3. runs the relevant ETL spark job inside the spark container, the job to run is determined by the provided assembly jar and configuration file (application.conf).
+3. runs ETL spark job inside the spark container, the job to run is determined by the provided configuration file (application.conf).
 4. tests outcomes of the ETL job run.
-5. brings all docker containers down.
+5. docker-compose down.
 
-To run all integration tests, create the required assembly being used by the test case, for example, JsonETLIntegrationTest runs the 'etlite' assembly jar while ProtobufETLIntegrationTest runs the 'proto-example' assembly jar.
+To run integration tests first create etlite uber jar: 
  
-    $ sbt etlite/assembly           # creates the etlite assembly jar required by the Json integration test
-    $ sbt proto-example/assembly    # creates the proto-example assembly jar required by the Protobuf integration test
+    $ sbt etlite/assembly           # creates etlite assembly jar
     $ sbt etlite/it:test            # runs all integration tests under src/it
     

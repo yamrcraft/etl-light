@@ -14,9 +14,9 @@ class JsonTransformer(config: Config) extends Transformer[Message[String]] {
   val typeSelectionField = config.getString("message-type-selection-field")
 
   @throws(classOf[EtlException])
-  override def transform(message: InboundMessage): Message[String] = {
+  override def transform(inbound: InboundMessage): Message[String] = {
     try {
-      val msgStr = toString(message.msg)
+      val msgStr = new String(inbound.msg, "UTF8")
       val msgJson = Json.parse(msgStr)
       val msgType: String = (msgJson \ typeSelectionField).asOpt[String].getOrElse(defaultMessageType)
       val timestamp: Option[String] = (msgJson \ timestampField).asOpt[String]
@@ -29,5 +29,4 @@ class JsonTransformer(config: Config) extends Transformer[Message[String]] {
     }
   }
 
-  override def toString(msg: Array[Byte]) = new String(msg, "UTF8")
 }

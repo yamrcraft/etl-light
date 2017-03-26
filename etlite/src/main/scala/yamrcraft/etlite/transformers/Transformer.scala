@@ -10,8 +10,6 @@ import yamrcraft.etlite.EtlException
 trait Transformer[T] {
 
   @throws(classOf[EtlException])
-  def transform(message: InboundMessage): T
-
-  def toString(event: Array[Byte]): String
+  def transform(inbound: InboundMessage): T
 
 }

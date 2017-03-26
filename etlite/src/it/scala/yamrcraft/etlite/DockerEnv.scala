@@ -8,8 +8,9 @@ object DockerEnv {
 
   def dockerComposeDown: Int = "docker-compose -f src/it/docker-compose.yml down".!
 
-  def runSparkJob(jarFileName: String, confFileName: String): Int = {
-    s"docker exec it_spark_1 /usr/spark-2.1.0/bin/spark-submit /usr/etl-light/$jarFileName /usr/etl-light/resources/$confFileName".!
+  def runSparkJob(jarFileName: String, confFileName: String, extraLibraryPath: Option[String] = None): Int = {
+    val properties = extraLibraryPath.map(path => s"--jars=$path").getOrElse("")
+    s"docker exec it_spark_1 /usr/spark-2.1.0/bin/spark-submit $properties /usr/etl-light/$jarFileName /usr/etl-light/resources/$confFileName".!
   }
 
   def readFileFromDocker(stateFile: String): String =

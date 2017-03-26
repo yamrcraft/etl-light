@@ -28,11 +28,11 @@ class JsonToAvroTransformer(config: Config) extends Transformer[Message[GenericR
   val defaultSchema: Schema = createSchema(defaultSchemaFileName)
 
   @throws(classOf[EtlException])
-  override def transform(message: InboundMessage): Message[GenericRecord] = {
+  override def transform(inbound: InboundMessage): Message[GenericRecord] = {
 
     try {
-      val schema = getSchema(message.msg)
-      val record = converter.convertToGenericDataRecord(message.msg, schema)
+      val schema = getSchema(inbound.msg)
+      val record = converter.convertToGenericDataRecord(inbound.msg, schema)
 
       Message[GenericRecord](
         record,
@@ -46,15 +46,14 @@ class JsonToAvroTransformer(config: Config) extends Transformer[Message[GenericR
     }
   }
 
-  override def toString(event: Array[Byte]) = new String(event, "UTF8")
-
   private def createSchema(path: String): Schema = new Schema.Parser().parse(FileUtils.readContent(path))
 
   private def getSchema(msg: Array[Byte]): Schema = {
     if (schemaSelectionField.isEmpty) {
       defaultSchema
     } else {
-      val msgJson = Json.parse(toString(msg))
+      val msgAsString = new String(msg, "UTF8")
+      val msgJson = Json.parse(msgAsString)
       val selectionValue = (msgJson \ schemaSelectionField.get).asOpt[String]
       schemas.get.getOrElse(selectionValue.get, defaultSchema)
     }

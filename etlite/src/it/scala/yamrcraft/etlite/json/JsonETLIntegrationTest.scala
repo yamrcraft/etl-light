@@ -12,6 +12,7 @@ class JsonETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
   val eventTime = "2017-02-21 07:30:01"
 
   override def beforeAll(): Unit = {
+
     // run containers
     info(s"starting docker containers...")
     val code = DockerEnv.dockerComposeUp
@@ -49,7 +50,7 @@ class JsonETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
 //    assert(output.split('\n').length === 100)
   }
 
-  it should "write error file with malformed events" in {
+  it should "write error files with malformed events" in {
 
   }
 

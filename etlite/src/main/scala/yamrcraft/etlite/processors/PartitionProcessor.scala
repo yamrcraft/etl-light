@@ -4,7 +4,7 @@ import java.io.IOException
 
 import org.slf4j.LoggerFactory
 import yamrcraft.etlite.transformers.InboundMessage
-import yamrcraft.etlite.writers.{ErrorEvent, ErrorEventWriter}
+import yamrcraft.etlite.writers.{ErrorInfo, ErrorEventWriter}
 import yamrcraft.etlite.{ErrorType, EtlException, EtlSettings}
 
 import scala.util.Try
@@ -20,10 +20,10 @@ class PartitionProcessor(jobId: Long, partitionId: Int, settings: EtlSettings) {
   def processPartition(partition: Iterator[InboundMessage]): Unit = {
     logger.info(s"partition processing started [jobId=$jobId, partitionId=$partitionId]")
 
-    partition foreach { message =>
+    partition foreach { inbound =>
 
       try {
-        pipeline.processMessage(message)
+        pipeline.processMessage(inbound)
 
       } catch {
         case e@(_: Exception) =>
@@ -34,8 +34,8 @@ class PartitionProcessor(jobId: Long, partitionId: Int, settings: EtlSettings) {
             case _ => ErrorType.SystemError.toString
           }
           val cause = Try(e.getCause.getMessage).getOrElse("")
-          val errorEvent = ErrorEvent(System.currentTimeMillis(), errorType, Some(cause), pipeline.transformer.toString(message.msg))
-          errorsWriter.write(errorEvent)
+          val errorInfo = ErrorInfo(errorType, Some(cause))
+          errorsWriter.write((inbound.msg, errorInfo))
       }
     }
 

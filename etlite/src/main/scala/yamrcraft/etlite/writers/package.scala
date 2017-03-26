@@ -7,6 +7,6 @@ package object writers {
 
   type AvroEventsWriter = Writer[Message[GenericRecord]]
 
-  type ErrorEventsWriter = Writer[ErrorEvent]
+  type ErrorEventsWriter = Writer[(Array[Byte], ErrorInfo)]
 
 }
