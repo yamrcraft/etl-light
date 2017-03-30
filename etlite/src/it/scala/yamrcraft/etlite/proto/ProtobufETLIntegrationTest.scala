@@ -32,8 +32,8 @@ class ProtobufETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
         .build()
 
     // ingest a User instance protobuf event
-    info("1 protobuf event being ingested ...")
-    kafkaPublisher.send(topic, user.toByteArray)
+    info("100 protobuf event being ingested ...")
+    kafkaPublisher.send(topic, List.fill(100)(user.toByteArray))
 
 //    val userWithTimestampMissing =
 //      UserOuterClass.User.newBuilder()
@@ -42,8 +42,8 @@ class ProtobufETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
 //        .build()
 
     // ingest a User instance protobuf event with missing timestamp attribute
-    info("1 garbage event being ingested ...")
-    kafkaPublisher.send(topic, "garbage event".getBytes)
+//    info("1 garbage event being ingested ...")
+//    kafkaPublisher.send(topic, "garbage event".getBytes)
 
     //
 //    // ingest malformed Json event
@@ -55,7 +55,9 @@ class ProtobufETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
 //    info("1 Json with missing timestamp event ingested")
 //
 
+    // jar location set by docker-compose spark 'volumes'
     val eventsJarPath = "/usr/etl-light/proto-messages-assembly-0.1.0.jar"
+
     val sparkExitCode = DockerEnv.runSparkJob(jarFileName, configFileName, Some(eventsJarPath))
     info(s"spark job run [exit code: $sparkExitCode]")
   }
@@ -77,7 +79,7 @@ class ProtobufETLIntegrationTest extends FlatSpec with BeforeAndAfterAll {
     assert(state.ranges.length === 2)
 
     // num of ingested events should be equal to stored indexes in state file
-    assert(state.ranges.foldLeft(0)((a,b) => a + b.untilOffset.asInstanceOf[Int]) === 2)
+    assert(state.ranges.foldLeft(0)((a,b) => a + b.untilOffset.asInstanceOf[Int]) === 100)
   }
 
   private def readStateFile(stateFile: String): KafkaOffsetsState = {

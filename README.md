@@ -1,12 +1,14 @@
 # ETL Light
 
-Light and effective Extract-Transform-Load job based on Apache Spark, tailored for use-cases where the source is Kafka and the sink is hadoop file system implementation, such as HDFS, Amazon S3 or local FS (useful for testing).
+Light and effective Extract-Transform-Load job based on Apache Spark, tailored for use-cases where the source is Kafka and the sink is hadoop file system implementation such as HDFS, Amazon S3 or local FS (useful for testing).
 
 **Features:**
 
 * **HDFS/S3 Sink:** write can be done to both HDFS and Amazon S3 by using different URL schemes ('hdfs://', 's3://') in relevant configuration entries.
 
-* **Configurable and Customizable:** configurable through application.conf file (see example at: core/main/resources), both transformer and writer classes can be replaced through 'pipeline' configuration.
+* **Configurable and Customizable:** configurable through application.conf file (see example at: etlite/src/it/resource and etlite/src/main/resources), both transformer and writer classes can be replaced through 'pipeline' configuration.
+
+* **Protobuf full support:** includes a fully configurable pipeline consuming protobuf messages from Kafka (see examples section).
 
 * **Scalable:** by leveraging Spark framework, scalability is achieved by default. Using Kafka RDD source enables maximum efficiency having as many executors as the number of topics partitions (can be configured for less). 
 
@@ -18,7 +20,7 @@ Light and effective Extract-Transform-Load job based on Apache Spark, tailored f
 
 * **Error Handling:** each consumed Kafka event that failed the processing phase (e.g. because of parsing error) will be written into a corresponding output error file including the processing error message so it can be later inspected and resolved.
 
-* **Offsets Replay:** As each job run starts from the last saved state file, it is possible to run jobs starting from an older state just by deleting all proceeding state files, this will cause the next job run to consume all events starting from that state offsets.
+* **ETL Replay:** As each job run starts from the last saved state file, it is possible to run jobs starting from an older state just by deleting all proceeding state files or by modifying offset entries within the file, this will cause the next job run to consume all events starting from that state offsets.
 
 * **Contention Protected:** uses a distributed lock (through zookeeper) to promise a single Spark job runs concurrently avoiding write contention and potential inconsistency/corruption.
  
@@ -42,14 +44,17 @@ A Pipeline instance is created by an implementation of yamrcraft.etlite.pipeline
 
 A PipelineFactory class must be configured in the provided job' configuration file (application.conf). 
   
-There are 2 implementations of the PipelineFactory trait:
+There are several implementations of the PipelineFactory trait:
 
-* JsonPipelineFactory:
+* JsonToSimpleFilePipelineFactory:
     Creates a Pipeline that is composed of a JsonTransformer and TimePartitioningWriter (configured with a string writer).
     Output is a time partitioned folder structure containing files with string format (Json events).
-* ParquetPipelineFactory - 
-    Creates a Pipeline that is composed of a AvroTransformer and TimePartitioningWriter (configured with a parquet writer).
+* JsonToParquetPipelineFactory: 
+    Creates a Pipeline that is composed of a JsonToAvroTransformer and TimePartitioningWriter (configured with a parquet writer).
     Output is a time partitioned folder structure containing files with Parquet format.
+* GenericProtoPipelineFactory:
+    Creates a Pipeline that is composed of a ProtoTransformer and TimePartitioningWriter.
+    For more info see examples.
 
 Different compositions of Transformers and Writers can be built into Pipelines as needed.
 
@@ -78,24 +83,9 @@ See configuration examples under: etlite/src/main/resources
 
 ## Build
 
-Generates an uber jar ready to be used for running as a Spark job (depending on specific use case might require extension, see examples/protobuf as an example for ETL that translates specific protobuf events):
+Generates an uber jar ready to be used for running as a Spark job (specific use cases might require extension):
 
     $ sbt etlite/assembly  
-
-## Run
-
-Copy 'etlite' assembly jar and your relevant application.conf file into target folder, e.g. \<deploy folder\>. 
- 
-Run in **yarn client** mode (running driver locally):
-
-    $ cd <deploy folder>
-    $ spark-submit --driver-java-options "-DSPARK_YARN_MODE=true" --master yarn-client <assembly jar> <application.conf>
-    
-Run in **yarn-cluster** mode (running driver in yarn application master):
-    
-    $ cd <deploy folder>
-    $ spark-submit --driver-java-options "-DSPARK_YARN_MODE=true" --master yarn-cluster <assembly jar> <application.conf>
-
 
 ## Test
 
@@ -105,11 +95,67 @@ Each integration test generally goes through these steps:
 1. docker-compose up - starting zookeeper, kafka and spark containers.
 2. ingests events that are relevant for the specific test case into kafka (e.g. json, protobuf).
 3. runs ETL spark job inside the spark container, the job to run is determined by the provided configuration file (application.conf).
-4. tests outcomes of the ETL job run.
+4. asserts ETL job run artifacts.
 5. docker-compose down.
 
-To run integration tests first create etlite uber jar: 
+To run integration tests first create etlite uber jar and then run the tests: 
  
     $ sbt etlite/assembly           # creates etlite assembly jar
-    $ sbt etlite/it:test            # runs all integration tests under src/it
+    $ sbt proto-messages/assembly   # creates an external protobuf messages jar used by the protobuf integration test
     
+    $ sbt etlite/it:test            # runs all integration tests under src/it using dockers for kafka/spark
+    
+
+## Run
+
+Copy generated 'etlite' assembly jar and your relevant application.conf file into target spark machine and place in the following commands: 
+
+(*) Note: to read configuration file from local file system, prefix path with: "file:///"
+
+    $ spark-submit <assembly jar> <application.conf>
+ 
+Run in **yarn client** mode (running driver locally):
+
+    $ spark-submit --master yarn-client <assembly jar> <application.conf>
+    
+Run in **yarn-cluster** mode (running driver in yarn application master):
+    
+    $ spark-submit --master yarn-cluster <assembly jar> <application.conf>
+
+## Examples
+
+### Protobuf to Parquet ETL
+
+Off the shelf support for protobuf events transformation and loading - only requires custom configuration and inclusion of the referenced protobuf events jar in spark classpath.  
+
+(*) assuming each kafka topic holds messages of a single protobuf schema, which is a good practice to have anyway.
+
+In order to run a job that reads protobuf serialized messages from Kafka you will need to do the following:
+
+1. set the relevant configuration entries in application.conf file as follows:
+
+1.1 set the pipline factory class to be used, in this case protobuf pipeline class:
+ 
+    factory-class = "yamrcraft.etlite.pipeline.GenericProtoPipelineFactory"
+    
+1.2 set the mapping between your topic name to the protobuf event class fully qualified name, in this example the topic 'events' is expected to have protobuf messages that can be desrialized into an object of class 'examples.protobuf.UserOuterClass$User' which must exist in the classpath (see next how to configure it).   
+
+1.3 set the timestamp-field to specify a field in the protobuf event of a protobuf.Timestamp type, it is later used by the writer to resolve the storage partition.
+    
+    transformer = {
+          config = {
+            timestamp-field = "time"
+            topic-to-proto-class {
+              "events" = "examples.protobuf.UserOuterClass$User"
+            }
+          }
+        }
+
+    
+2. run the job and add your external protobuf messages jar (the jar that contains your protobuf generated classes) to spark classpath, for example:
+
+        $ spark-submit --jar=<path to external protobuf messages> <assembly jar> <application.conf>
+
+
+
+See running example under 'etlite/src/it/scala/yamrcraft/etlite/proto/ProtobufETLIntegrationTest'.

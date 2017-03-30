@@ -3,6 +3,7 @@ package yamrcraft.etlite.transformers
 import com.google.protobuf
 import com.google.protobuf.{MessageOrBuilder, Timestamp}
 import com.typesafe.config.Config
+import org.slf4j.LoggerFactory
 import yamrcraft.etlite.{ErrorType, EtlException}
 import yamrcraft.etlite.utils.ConfigConversions._
 
@@ -11,13 +12,15 @@ import yamrcraft.etlite.utils.ConfigConversions._
   *
   * requires the following configuration:
   *
-  *   timestamp-field = "time"
-  *   topics-to-proto-class {
-  *     "events" = "examples.protobuf.UserOuterClass$User"
-  *   }
+  * timestamp-field = "time"
+  * topics-to-proto-class {
+  * "events" = "examples.protobuf.UserOuterClass$User"
+  * }
   *
   */
 class ProtoTransformer(config: Config) extends Transformer[Message[protobuf.Message]] {
+
+  val logger = LoggerFactory.getLogger(this.getClass)
 
   val timestampFieldName: String = config.getString("timestamp-field")
 
