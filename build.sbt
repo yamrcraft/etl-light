@@ -1,5 +1,7 @@
 import Dependencies._
 
+resolvers in ThisBuild += "Twitter Maven Repo" at "http://maven.twttr.com"
+
 lazy val commonSettings = Seq(
   organization := "yamrcraft",
   version := "0.1.0",
